@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import QRCode from 'qrcode.react';
+import { QRCode } from 'qrcode.react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function AdminPage() {
