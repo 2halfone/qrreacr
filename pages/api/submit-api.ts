@@ -1,8 +1,13 @@
-// /pages/api/submitPresence.ts e /pages/api/submitAbsence.ts condividono questa logica base
-
 import { google } from 'googleapis';
 
-export async function writeToSheets({ name, surname, status }) {
+// Define the expected structure for function parameters
+type SheetParams = {
+  name: string;
+  surname: string;
+  status: string;
+};
+
+export async function writeToSheets({ name, surname, status }: SheetParams) {
   try {
     const auth = new google.auth.GoogleAuth({
       credentials: {
@@ -13,11 +18,17 @@ export async function writeToSheets({ name, surname, status }) {
     });
 
     const sheets = google.sheets({ version: 'v4', auth });
-    const date = new Date().toISOString().split('T')[0];
-    const row = [date, name, surname, status];
+
+    const now = new Date().toLocaleString('it-IT', {
+      timeZone: 'Europe/Rome',
+    });
+
+    const row = [now, name, surname, status];
+
+    const spreadsheetId = process.env.GOOGLE_SHEET_ID!;
 
     await sheets.spreadsheets.values.append({
-      spreadsheetId: process.env.SPREADSHEET_ID,
+      spreadsheetId,
       range: 'RawData!A:D',
       valueInputOption: 'USER_ENTERED',
       requestBody: {
@@ -25,19 +36,9 @@ export async function writeToSheets({ name, surname, status }) {
       },
     });
 
-    const userSheetName = `${name} ${surname}`;
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: process.env.SPREADSHEET_ID,
-      range: `${userSheetName}!A:D`,
-      valueInputOption: 'USER_ENTERED',
-      requestBody: {
-        values: [row],
-      },
-    });
-
-    return { success: true, message: `${status} registered for ${name} ${surname}` };
+    return { success: true, message: 'Row added successfully' };
   } catch (error) {
-    console.error('Error writing to Sheets:', error);
-    return { success: false, message: 'Error registering attendance.' };
+    console.error('Error writing to Google Sheets:', error);
+    return { success: false, message: 'Failed to add row' };
   }
 }
