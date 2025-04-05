@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 // @ts-ignore
 import QRCode from 'qrcode.react';
